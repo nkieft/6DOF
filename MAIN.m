@@ -47,7 +47,7 @@ Thrust_Orientation = 0;
 %--------------------------------------------------------------------------
 %Body
 Nosecone_Length = 32.5; %Length of vehicle nosecone
-Length_Vehicle = 137.5; %Length of entire Vehicle [in]
+Length_Vehicle = 144; %Length of entire Vehicle [in]
 Radius_Vehicle = 3.25; %Radius of nosecone base [in]
 
 %Fins
@@ -55,23 +55,22 @@ Fin_Root_Chord = 17; %Fin root chord length [in]
 Fin_Tip_Chord = 6; %Fin Tip chord length [in]
 Fin_Span = 5; %Fin semi-span [in]
 Fin_Sweep = 11;
-Fin_Cant = 0.05; %Fin cant angle [deg]
-Fin_Thicness = 0.25; %Fin Thickness
-
+Fin_Cant = 0.0; %Fin cant angle [deg]
+Fin_Thickness = 0.25; %Fin Thickness
 
 %Coupler
-Coupler_Location = 48.5; %Coupler distance from tip [in]
+Coupler_Location = 35; %Coupler distance from tip [in]
 Coupler_Length = 15; %Length of empty volume containing parachute [in]
 %--------------------------------------------------------------------------
 
 %% Mass Inputs
 %Mass and Inertia Overrides (Set to zero for no ovveride)
-Initial_Mass_Override = 0*67.207*2.207;
-Final_Mass_Override = 0*31.399*2.207;
-Initial_Inertia_Override = 0*45.95;
-Final_Inertia_Override = 0*33.57;
-Initial_CG_Override = 0*88.18;
-Final_CG_Override = 0*78.56;
+Initial_Mass_Override = 67.207*2.207;
+Final_Mass_Override = 31.399*2.207;
+Initial_Inertia_Override = 45.95;
+Final_Inertia_Override = 33.57;
+Initial_CG_Override = 88.18;
+Final_CG_Override = 78.56;
 
 %Normal Inputs
 %--------------------------------------------------------------------------
@@ -92,8 +91,8 @@ m_data_initial{11, :} = [93, 104.5, 6, 6, 14.7]; %Grain 3
 m_data_initial{12, :} = [104.5, 116, 6, 6, 14]; %Grain 4
 m_data_initial{13, :} = [116, 127.5, 6, 6, 13.1]; %Grain 5
 m_data_initial{14, :} = [127.5, 130, 6, 6, 11.8]; %Grain 6
-m_data_initial{15, :} = [130, 130, 6, 6, 5.72]; %Nozzle
-m_data_initial{16, :} = [130, 130, 6.5, 11, 7.16]; %Fins
+m_data_initial{15, :} = [130, 137, 6, 6, 5.72]; %Nozzle
+m_data_initial{16, :} = [144-17, 137, 6.5, 11, 7.16]; %Fins
 
 % Burnout Mass Distribution Inputs (Input Any Components Contributing to Mass)
 % Format: s{i, :} = [Start X, End X, Start Diameter, End Diameter, Mass]
@@ -129,8 +128,8 @@ Main_Deploy_Height = 1000; %Main deploy height [m]
 %% Simulation Inputs
 %--------------------------------------------------------------------------
 Termination_Time = 800; %Time at which simulation is forced to stop [s]
-Run_Dispersion = true; %FALSE for single simulation, TRUE for monte carlo
-Iteration_QTY = 100; %1 for single simulation, iteration qty for monte carlo
+Run_Dispersion = false; %FALSE for single simulation, TRUE for monte carlo
+Iteration_QTY = 1; %1 for single simulation, iteration qty for monte carlo
 outfile = "Mamba"; %Name of output file
 Max_Mach = 8; %Use 1.5x expected flight peak mach. Can do more, but will increase computation time
 Max_Apogee = 150000 / 3.281; %Use 1.5x expected flight apogee. Can do more, but will increase computation time
@@ -138,13 +137,13 @@ Max_Apogee = 150000 / 3.281; %Use 1.5x expected flight apogee. Can do more, but 
 
 %% Monte Carlo Inputs
 %--------------------------------------------------------------------------
-Thrust_Sigma = 2; %Thrust std [%]
-Mass_Sigma = 1; %Initial final mass std [%]
+Thrust_Sigma = 5; %Thrust std [%]
+Mass_Sigma = 3; %Initial final mass std [%]
 Launcher_Angle_Sigma = 1.5; %Launcher angle std  [deg]
 Launcher_Azimuth_Sigma = 0; %Launcher angle std [deg]
-Wind_Azimuth_Sigma = 20; %Wind azimuth std [deg]
-Wind_Magnitude_Sigma = 2; %Wind speed std [%]
-C_Sigma = 3; %Aero coefficient std [%]
+Wind_Scale_Sigma = 20; %Wind scale std [%]
+Wind_Offset_Sigma = 3; %Wind offset std [m/s]
+C_Sigma = 10; %Aero coefficient std [%]
 Cant_Sigma = 0.1; %Fin cant std [deg]
 Thrust_Angle_Sigma = 0.1; %Off-axis angle [deg]
 Thrust_Orientation_Sigma_Range = 360; %Off-axis orientation [deg]
@@ -197,7 +196,7 @@ F_T_T = F_T(:, 2);
 
 %Vectorize standard deviations
 if(Run_Dispersion)
-    sigma = [Thrust_Sigma, Mass_Sigma, Mass_Sigma, Launcher_Azimuth_Sigma, Launcher_Angle_Sigma, Wind_Magnitude_Sigma, Wind_Azimuth_Sigma, C_Sigma, C_Sigma, Cant_Sigma, Thrust_Angle_Sigma, Thrust_Orientation_Sigma_Range];
+    sigma = [Thrust_Sigma, Mass_Sigma, Mass_Sigma, Launcher_Azimuth_Sigma, Launcher_Angle_Sigma, Wind_Scale_Sigma, Wind_Offset_Sigma, C_Sigma, C_Sigma, Cant_Sigma, Thrust_Angle_Sigma, Thrust_Orientation_Sigma_Range];
 else
     sigma = zeros(1, 12);
 end
@@ -214,7 +213,7 @@ for i = 1:Iteration_QTY %Loops for each iteration
     [F_T_e, Mass_Initial_e, Mass_Final_e, Launcher_Azimuth_e, Launcher_Angle_e, C_b_e, C_c_e, Fin_Cant_e, Thrust_a_e, Thrust_o_e] = MonteCarlo(F_T_T, Mass_Initial, Mass_Final, Launcher_Azimuth, Launcher_Angle, C_b, C_c, Fin_Cant, Thrust_Angle, Thrust_Orientation, sigma);
     
     %Randomize wind
-    W_r = WindUncertainty(W_h, 50, 400);
+    W_r = WindUncertainty(W_h, Wind_Scale_Sigma, Wind_Offset_Sigma);
 
     %Calculate total motor impulse
     F_T_e(:, 2) = F_T_e;
@@ -222,7 +221,7 @@ for i = 1:Iteration_QTY %Loops for each iteration
     I_T = trapz(F_T_e(:, 2))*0.03;
 
     %Below 3 are constants to be passed into ode45 full of required data
-    Vehicle_Data = FillVehicleData(Radius_Vehicle, Length_Vehicle, CG_Initial, CG_Final, Mass_Initial_e, Mass_Final_e, I_T, Fin_Root_Chord, Nosecone_Length, ymac, Fin_Cant_e, Main_Deploy_Height, Area_Main, Cd_Main, Area_Drogue, Cd_Drogue, I_Initial, I_Final, Thrust_a_e, Thrust_o_e,Fin_Tip_Chord, Fin_Sweep,Fin_Thicness, Fin_Span, X_f);
+    Vehicle_Data = FillVehicleData(Radius_Vehicle, Length_Vehicle, CG_Initial, CG_Final, Mass_Initial_e, Mass_Final_e, I_T, Fin_Root_Chord, Nosecone_Length, ymac, Fin_Cant_e, Main_Deploy_Height, Area_Main, Cd_Main, Area_Drogue, Cd_Drogue, I_Initial, I_Final, Thrust_a_e, Thrust_o_e,Fin_Tip_Chord, Fin_Sweep,Fin_Thickness, Fin_Span, X_f);
     Launchsite_Data = FillLaunchSiteData(Launchsite_Latitude, Launchsite_Longitude, Launcher_Azimuth_e, Launcher_Angle_e, Rail_Length, Launchsite_Elevation, Rail_Contact_Force, Rail_Friction_Coeff);
     Physical_Const = FillConst();
 
@@ -260,14 +259,13 @@ for i = 1:Iteration_QTY %Loops for each iteration
 end
 %--------------------------------------------------------------------------
 
-
 %% Mean Simulation 
 %--------------------------------------------------------------------------
 %Mean Impulse
 I_T = trapz(F_T(:, 2))*0.03;
 
 %Below 3 are constants to be passed into ode45 full of required data
-Vehicle_Data = FillVehicleData(Radius_Vehicle, Length_Vehicle, CG_Initial, CG_Final, Mass_Initial, Mass_Final, I_T, Fin_Root_Chord, Nosecone_Length, ymac, Fin_Cant, Main_Deploy_Height, Area_Main, Cd_Main, Area_Drogue, Cd_Drogue, I_Initial, I_Final, Thrust_Angle, Thrust_Orientation, Fin_Tip_Chord, Fin_Sweep,Fin_Thicness, Fin_Span, X_f);
+Vehicle_Data = FillVehicleData(Radius_Vehicle, Length_Vehicle, CG_Initial, CG_Final, Mass_Initial, Mass_Final, I_T, Fin_Root_Chord, Nosecone_Length, ymac, Fin_Cant, Main_Deploy_Height, Area_Main, Cd_Main, Area_Drogue, Cd_Drogue, I_Initial, I_Final, Thrust_Angle, Thrust_Orientation, Fin_Tip_Chord, Fin_Sweep,Fin_Thickness, Fin_Span, X_f);
 Launchsite_Data = FillLaunchSiteData(Launchsite_Latitude, Launchsite_Longitude, Launcher_Azimuth, Launcher_Angle, Rail_Length, Launchsite_Elevation, Rail_Contact_Force, Rail_Friction_Coeff);
 Physical_Const = FillConst();
 
@@ -301,10 +299,10 @@ ZM = [s(:, 20); s_p(:, 9)];
 [lonM, latM, hM] = ECEFtoGeo(XM, YM, ZM);
 
 %Trajectory Plotting on Globe
-uif = uifigure;
-earth = geoglobe(uif);
-hold(earth, 'on')
-geoplot3(earth, latM, lonM, hM, 'r', 'LineWidth', 1)
+%if = uifigure;
+%earth = geoglobe(uif);
+%hold(earth, 'on')
+%geoplot3(earth, latM, lonM, hM, 'r', 'LineWidth', 1)
 
 %% Sim Intermediate Value Extraction
 %--------------------------------------------------------------------------

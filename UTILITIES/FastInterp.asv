@@ -8,21 +8,19 @@ indexFractional = (Xq - X(1)) / inc;
 indexLow = floor(indexFractional) + 1;
 indexHigh = ceil(indexFractional) + 1;
 
-len_X = length(X);
+if(indexLow < 0)
+    pause(0.1)
+end
 
-% Make sure things don't go out of bounds
-indexIsTooHigh = indexLow > len_X - 1;
-indexLow(indexIsTooHigh) = len_X - 1;
+%Make sure things don't go out of bounds
+if(indexLow > length(X))
+    indexLow = length(X)-1;
+end
 
-indexIsTooLow = indexLow < 1;
-indexLow(indexIsTooLow) = 1;
-
-% Make sure things don't go out of bounds
-indexIsTooHigh = indexHigh > len_X;
-indexHigh(indexIsTooHigh) = len_X;
-
-indexIsTooLow = indexLow < 2;
-indexHigh(indexIsTooLow) = 2;
+%Make sure things don't go out of bounds
+if(indexHigh > length(X))
+    indexHigh = length(X);
+end
 
 %Values at low and high indicies
 XLow = X(indexLow);

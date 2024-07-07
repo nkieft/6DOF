@@ -11,6 +11,8 @@ for i = 1:11
 
     [W_A, W_N, F_A, F_N] = AeroDistribution(Vehicle_Data, Mach, q, F_T, filename);
 
+    F_N = trapz(x, W_N);
+
     a_cg_N = F_N/m;
     a_cg_A = F_A/m;
 
