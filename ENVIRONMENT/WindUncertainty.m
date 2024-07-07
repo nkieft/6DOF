@@ -19,15 +19,12 @@ err_o = randn(1, 1)*sigma_o;
 
 W = W*err_s+err_o;
 
-gust = 15;
+gust = 5;
 fs = 1/(h(2)-h(1));
 fd = 1/1000;
 noise = randn(length(h), 1);
 noise = lowpass(noise, fd, fs)*gust;
 W=W+noise;
-
-plot(h, noise)
-
 
 
 W_r = [h, W];

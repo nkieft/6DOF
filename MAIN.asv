@@ -128,8 +128,8 @@ Main_Deploy_Height = 1000; %Main deploy height [m]
 %% Simulation Inputs
 %--------------------------------------------------------------------------
 Termination_Time = 800; %Time at which simulation is forced to stop [s]
-Run_Dispersion = true; %FALSE for single simulation, TRUE for monte carlo
-Iteration_QTY = 100; %1 for single simulation, iteration qty for monte carlo
+Run_Dispersion = false; %FALSE for single simulation, TRUE for monte carlo
+Iteration_QTY = 1; %1 for single simulation, iteration qty for monte carlo
 outfile = "Mamba"; %Name of output file
 Max_Mach = 8; %Use 1.5x expected flight peak mach. Can do more, but will increase computation time
 Max_Apogee = 150000 / 3.281; %Use 1.5x expected flight apogee. Can do more, but will increase computation time
