@@ -1,1 +1,2 @@
-# Performance Analysis of Rockets through Assessment of Dynamics In Simulated Environment
+# PARADISE
+## Performance Analysis of Rockets through Assessment of Dynamics In Simulated Environment
